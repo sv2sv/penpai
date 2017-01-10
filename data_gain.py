@@ -3,6 +3,7 @@
 import httplib2
 import re
 from lxml import etree
+import json
 
 
 class DataGain:
@@ -13,12 +14,11 @@ class DataGain:
         http = httplib2.Http()
         response, content = http.request(url, 'GET')
         return content
-        # return content.decode('unicode-escape').encode('utf-8')
 
     def get_categorys(self, url):
         content = self.get_content(url)
-        list = re.findall(r'<a href="(.*?)" class="bn_a(?: on)?"(?: id="select")?>(.*?)</a>',
-                          content)
+        list = re.findall(r'<a href="(.*?)" class="bn_a(?: on)?' +
+                          '"(?: id="select")?>(.*?)</a>', content)
         lis = []
         for l in list:
             dict = {}
@@ -98,14 +98,7 @@ class DataGain:
 def main():
         data = DataGain()
         # data.get_categorys('http://www.thepaper.cn/')
-        f = file('data.txt', "w+")
-        list = data.get_allcategory()
-        for l in list:
-            f.write(repr(l))
-            f.write("\n")
-        f.close()
-        print data.comments
-
+        json.dump(data.get_allcategory, open('data.json', 'w'))
 
 if __name__ == "__main__":
     main()
