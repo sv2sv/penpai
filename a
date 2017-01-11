@@ -19,3 +19,6 @@ f=open('a.txt','w') 或f = file('a.txt','w')
 f.write('爱') // 该方法接收str类型参数
 f.write(u'爱') 会报错，python中会隐式的通过ascii 讲unicode encode 为 str字符串（可通过sys.getdefaultencoding()查看默认的编码方式）
 
+
+
+
