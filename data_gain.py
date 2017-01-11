@@ -3,27 +3,26 @@
 import httplib2
 import re
 from lxml import etree
-import json
+import ujson
 
 
 class DataGain:
-    comments = ''
     main = 'http://www.thepaper.cn/'
 
     def get_content(self, url):
-        http = httplib2.Http()
+        http = httplib2.Http('.cache')
         response, content = http.request(url, 'GET')
         return content
 
-    def get_categorys(self, url):
+    def get_categorys(self, url=main):
         content = self.get_content(url)
         list = re.findall(r'<a href="(.*?)" class="bn_a(?: on)?' +
                           '"(?: id="select")?>(.*?)</a>', content)
         lis = []
         for l in list:
             dict = {}
-            dict['names'] = l[1]
-            dict['links'] = l[0]
+            dict['name'] = l[1]
+            dict['link'] = l[0]
             lis.append(dict)
         return lis
 
@@ -33,7 +32,8 @@ class DataGain:
         links = []
         content = self.get_content(url)
         tree = etree.HTML(content)
-        if(index < 4):
+        # 问吧是最后一个，订阅没有子节点，分开解析
+        if(index < 5):
             xpath = "//ul[@class='clearfix']"
             a = tree.xpath(xpath)
             names = a[index].xpath("li/a/text()")
@@ -73,12 +73,16 @@ class DataGain:
 
     def get_allcategory(self, url=main):
         list = self.get_categorys(url)
+        size = len(list)
+        count = 0
         for i in range(len(list)):
-            #0 是精选，５是订阅
-            if i == 0 | i == 5:
+            # 0 是精选，6是订阅
+            if i == 0 or i == size-2:
+                print list[i]['name']
                 list[i]['child'] = []
             else:
-                list[i]['child'] = self.get_ccategorys(index=i-1)
+                list[i]['child'] = self.get_ccategorys(index=count)
+                count += 1
         return list
 
     def __get_datacontent(self, link, index):
@@ -94,11 +98,24 @@ class DataGain:
                 suffix = "load_index.jsp?nodeid=" + ids + "&pageidx=" + index
         return self.get_content(main+suffix)
 
+    def get_dict(self, url=main):
+        dict = {}
+        for l in self.get_categorys():
+            dict[l['name']] = l['link']
+        for i in range(8):
+            for l in self.get_ccategorys(index=i):
+                dict[l['name']] = l['link']
+        print dict
+        return dict
+
 
 def main():
         data = DataGain()
-        # data.get_categorys('http://www.thepaper.cn/')
-        json.dump(data.get_allcategory, open('data.json', 'w'))
+        data.get_dict()
+        js = ujson.dumps(data.get_allcategory(), ensure_ascii=False)
+        with open('data.json', 'w') as file:
+            file.write(js)
+
 
 if __name__ == "__main__":
     main()
