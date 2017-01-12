@@ -1,0 +1,9 @@
+#!/usr/bin/python
+# -*- coding:utf-8 -*-
+def parse_datas(list):
+    if list is not None:
+        for l in list:
+            result = l.has_key('child') ?
+                lambda l:'names' + l['names']+l['links']+parse_datas(l['child'])
+
+
