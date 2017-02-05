@@ -56,21 +56,22 @@ class DataGain:
 
     def get_datas(self, link, index=0):
         content = self.__get_datacontent(link, index)
+        print content
         tree = etree.HTML(content)
         list = []
         elemments = tree.xpath("//div[@class='news_li']")
         for i in range(len(elemments)):
             dict = {}
-            dict['img'] = elemments[i].xpath("descendant::img/@src")
-            print dict['img']
-            dict['title'] = elemments[i].xpath("h2/a/text()")
-            dict['link'] = elemments[i].xpath("h2/a/@href")
-            dict['category'] = elemments[i].xpath("div[2]/a/text()")
-            dict['category_link'] = elemments[i].xpath("div[2]/a/@href")
-            dict['isCategory'] = elemments[i].xpath("div[2]/a/@href") == link
-            dict['time'] = elemments[i].xpath("descendant::span/text()")
+            dict['img'] = elemments[i].xpath("descendant::img/@src")[0]
+            dict['title'] = elemments[i].xpath("h2/a/text()")[0]
+            dict['link'] = elemments[i].xpath("h2/a/@href")[0]
+            dict['category'] = elemments[i].xpath("div[2]/a/text()")[0]
+            dict['category_link'] = elemments[i].xpath("div[2]/a/@href")[0]
+            dict['isCategory'] = elemments[i].xpath("div[2]/a/@href")[0] == link
+            dict['time'] = elemments[i].xpath("descendant::span/text()")[0]
             list.append(dict)
-        return list
+        js = ujson.dumps(list, ensure_ascii=False, escape_forward_slashes=False)
+        return js.decode('utf-8').encode('raw_unicode_escape')
 
     def get_allcategory(self, url=ma):
         list = self.get_categorys(url)
@@ -79,12 +80,12 @@ class DataGain:
         for i in range(len(list)):
             # 0 是精选，6是订阅
             if i == 0 or i == size-2:
-                print list[i]['name']
                 list[i]['child'] = []
             else:
                 list[i]['child'] = self.get_ccategorys(index=count)
                 count += 1
-        return list
+        js = ujson.dumps(list, ensure_ascii=False, escape_forward_slashes=False)
+        return js
 
     def __get_datacontent(self, link, index):
         ids = 0
