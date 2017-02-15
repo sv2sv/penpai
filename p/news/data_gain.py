@@ -51,6 +51,7 @@ class DataGain:
                 dict = {}
                 dict['name'] = names[i]
                 dict['link'] = links[i]
+                dict['child'] = []
                 list.append(dict)
         return list
 
